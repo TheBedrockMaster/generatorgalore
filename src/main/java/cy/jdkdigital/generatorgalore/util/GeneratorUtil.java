@@ -89,6 +89,7 @@ public class GeneratorUtil
             generatorBlockEntity.getCapability(ForgeCapabilities.ITEM_HANDLER).ifPresent(handler -> {
                 if (handler instanceof ItemStackHandler itemHandler) {
                     itemHandler.setStackInSlot(GeneratorMenu.SLOT_FUEL, ItemStack.EMPTY);
+                    itemHandler.setStackInSlot(GeneratorMenu.SLOT_CHARGE, ItemStack.EMPTY);
                 }
             });
 

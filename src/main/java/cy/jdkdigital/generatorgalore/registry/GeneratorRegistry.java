@@ -63,8 +63,6 @@ public class GeneratorRegistry
                     continue;
                 }
 
-                // TODO Validate required attributes
-
                 generator = GeneratorCreator.create(id, json);
 
                 reader.close();
@@ -85,7 +83,9 @@ public class GeneratorRegistry
 
     public static void setupDefaultFiles(String dataPath, Path targetPath, boolean override) {
         List<Path> roots = List.of(ModList.get().getModFileById(GeneratorGalore.MODID).getFile().getFilePath());
-        GeneratorGalore.LOGGER.info("[Generator Galore] Pulling defaults from: " + roots);
+        if (override) {
+            GeneratorGalore.LOGGER.debug("[Generator Galore] Pulling defaults from: " + roots);
+        }
 
         if (roots.isEmpty()) {
             throw new RuntimeException("Failed to load defaults.");
@@ -123,7 +123,9 @@ public class GeneratorRegistry
                                 Files.copy(path, Paths.get(targetPath.toString(), path.getFileName().toString()));
                             }
                         } catch (IOException e) {
-                            GeneratorGalore.LOGGER.error("Could not copy file: {}, Target: {}", path, targetPath);
+                            if (override) {
+                                GeneratorGalore.LOGGER.error("Could not copy file: {}, Target: {}", path, targetPath);
+                            }
                         }
                     });
         } catch (IOException e) {

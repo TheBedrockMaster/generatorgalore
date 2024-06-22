@@ -51,7 +51,7 @@ minecraft {
             property 'forge.logging.markers', 'REGISTRIES'
             property 'forge.logging.console.level', 'debug'
 
-            args '--mod', 'generatorgalore', '--all', '--output', file('src/generated/resources/'), '--existing', file('src/main/resources/')
+            args '--mod', "${mod_id}", '--all', '--output', file('src/generated/resources/'), '--existing', file('src/main/resources/')
 
             mods {
                 generatorgalore {
@@ -83,6 +83,11 @@ dependencies {
 
     implementation fg.deobf("curse.maven:jade-324717:4573193")
     implementation fg.deobf("curse.maven:jei-238222:4579419")
+
+    implementation fg.deobf("curse.maven:cofh-core-69162:4970669")
+    implementation fg.deobf("curse.maven:redstone-arsenal-70631:4970691")
+    implementation fg.deobf("curse.maven:thermal-foundation-222880:4979840")
+    implementation fg.deobf("curse.maven:thermal-dynamics-227443:4970699")
 }
 
 def resourceTargets = ['META-INF/mods.toml', 'pack.mcmeta']

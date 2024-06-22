@@ -1,7 +1,9 @@
 {
-  "parent": "generatorgalore:block/generator",
+  "parent": "generatorgalore:block/generator_new",
   "textures": {
-    "top": "generatorgalore:block/ender_generator_top",
-    "side": "generatorgalore:block/ender_generator_side"
+    "side": "generatorgalore:block/ender_generator_side",
+    "face": "generatorgalore:block/ender_generator_front",
+    "top": "generatorgalore:block/ender_generator_top_off",
+    "bottom": "generatorgalore:block/ender_generator_bottom"
   }
 }

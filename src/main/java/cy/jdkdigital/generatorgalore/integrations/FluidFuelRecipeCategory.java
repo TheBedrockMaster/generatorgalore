@@ -38,7 +38,7 @@ public class FluidFuelRecipeCategory implements IRecipeCategory<FluidFuelRecipe>
 
     @Override
     public @NotNull RecipeType<FluidFuelRecipe> getRecipeType() {
-        return JeiPlugin.FLUID_FUEL_RECIPE_TYPES.get(generator);
+        return JeiPlugin.FLUID_FUEL_RECIPE_TYPES.get(generator.getId());
     }
 
     @Override

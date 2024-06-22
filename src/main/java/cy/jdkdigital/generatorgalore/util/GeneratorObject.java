@@ -24,16 +24,18 @@ public class GeneratorObject
     private final double transferRate;
     private final double consumptionRate;
     private final int bufferCapacity;
+    private final boolean hasChargeSlot;
     private final ResourceLocation fuelTag;
     private Map<ResourceLocation, GeneratorCreator.Fuel> fuelList;
 
-    public GeneratorObject(ResourceLocation id, GeneratorUtil.FuelType fuelType, double generationRate, double transferRate, double consumptionRate, int bufferCapacity, ResourceLocation fuelTag) {
+    public GeneratorObject(ResourceLocation id, GeneratorUtil.FuelType fuelType, double generationRate, double transferRate, double consumptionRate, int bufferCapacity, boolean hasChargeSlot, ResourceLocation fuelTag) {
         this.id = id;
         this.fuelType = fuelType;
         this.generationRate = generationRate;
         this.transferRate = transferRate;
         this.consumptionRate = consumptionRate;
         this.bufferCapacity = bufferCapacity;
+        this.hasChargeSlot = hasChargeSlot;
         this.fuelTag = fuelTag;
     }
 
@@ -89,6 +91,10 @@ public class GeneratorObject
         return bufferCapacity;
     }
 
+    public boolean hasChargeSlot() {
+        return hasChargeSlot;
+    }
+
     public ResourceLocation getFuelTag() {
         return this.fuelTag;
     }
@@ -101,6 +107,7 @@ public class GeneratorObject
             Codec.DOUBLE.fieldOf("transferRate").forGetter(GeneratorObject::getTransferRate),
             Codec.DOUBLE.fieldOf("consumptionRate").forGetter(GeneratorObject::getConsumptionRate),
             Codec.INT.fieldOf("bufferCapacity").forGetter(GeneratorObject::getBufferCapacity),
+            Codec.BOOL.fieldOf("hasChargeSlot").orElse(true).forGetter(GeneratorObject::hasChargeSlot),
             ResourceLocation.CODEC.fieldOf("fuelTag").orElse(GeneratorUtil.EMPTY_TAG).forGetter(GeneratorObject::getFuelTag)
         ).apply(instance, GeneratorObject::new));
     }

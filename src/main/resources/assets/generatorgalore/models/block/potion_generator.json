@@ -1,6 +1,9 @@
 {
-  "parent": "generatorgalore:block/generator",
+  "parent": "generatorgalore:block/generator_new",
   "textures": {
-    "side": "minecraft:block/brain_coral_block"
+    "side": "generatorgalore:block/potion_generator_side",
+    "face": "generatorgalore:block/potion_generator_front",
+    "top": "generatorgalore:block/potion_generator_top_off",
+    "bottom": "generatorgalore:block/potion_generator_bottom"
   }
 }

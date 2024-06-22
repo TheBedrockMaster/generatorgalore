@@ -56,6 +56,10 @@
         {
             "id": "generatorgalore:potion_generator",
             "required": false
+        },
+        {
+            "id": "generatorgalore:honey_generator",
+            "required": false
         }
     ]
 }

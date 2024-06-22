@@ -24,6 +24,8 @@ public class GeneratorScreen extends AbstractContainerScreen<GeneratorMenu>
 {
     private static final ResourceLocation GUI_SOLID = new ResourceLocation(GeneratorGalore.MODID, "textures/gui/container/generator_solid.png");
     private static final ResourceLocation GUI_FLUID = new ResourceLocation(GeneratorGalore.MODID, "textures/gui/container/generator_fluid.png");
+    private static final ResourceLocation GUI_SOLID_CHARGING = new ResourceLocation(GeneratorGalore.MODID, "textures/gui/container/generator_solid_charging.png");
+    private static final ResourceLocation GUI_FLUID_CHARGING = new ResourceLocation(GeneratorGalore.MODID, "textures/gui/container/generator_fluid_charging.png");
 
     public GeneratorScreen(GeneratorMenu screenContainer, Inventory inv, Component titleIn) {
         super(screenContainer, inv, titleIn);
@@ -77,7 +79,9 @@ public class GeneratorScreen extends AbstractContainerScreen<GeneratorMenu>
 
     @Override
     protected void renderBg(@NotNull GuiGraphics guiGraphics, float partialTicks, int mouseX, int mouseY) {
-        var GUI = this.menu.blockEntity.generator.getFuelType().equals(GeneratorUtil.FuelType.FLUID) ? GUI_FLUID : GUI_SOLID;
+        var canCharge = this.menu.blockEntity.generator.hasChargeSlot();
+        var GUI = this.menu.blockEntity.generator.getFuelType().equals(GeneratorUtil.FuelType.FLUID) ?
+                canCharge ? GUI_FLUID_CHARGING : GUI_FLUID : canCharge ? GUI_SOLID_CHARGING : GUI_SOLID;
         guiGraphics.blit(GUI, getGuiLeft(), getGuiTop(), 0, 0, this.getXSize(), this.getYSize());
 
         // Burn progress

@@ -1,5 +1,6 @@
 package cy.jdkdigital.generatorgalore.common.block.entity;
 
+import com.mojang.datafixers.util.Pair;
 import cy.jdkdigital.generatorgalore.Config;
 import cy.jdkdigital.generatorgalore.GeneratorGalore;
 import cy.jdkdigital.generatorgalore.cap.ControlledEnergyStorage;
@@ -71,7 +72,9 @@ public class GeneratorBlockEntity extends CapabilityBlockEntity
         this.inventoryHandler = LazyOptional.of(() -> new ManualItemHandler(2) {
             @Override
             public boolean isItemValid(int slot, @NotNull ItemStack stack) {
-                if (slot != GeneratorMenu.SLOT_FUEL) return false;
+                if (slot == GeneratorMenu.SLOT_CHARGE) {
+                    return stack.getCapability(ForgeCapabilities.ENERGY).isPresent();
+                }
 
                 if (!generator.getFuelTag().equals(GeneratorUtil.EMPTY_TAG)) {
                     return stack.is(ModTags.getItemTag(generator.getFuelTag()));
@@ -136,38 +139,42 @@ public class GeneratorBlockEntity extends CapabilityBlockEntity
                         // Consume fuels
                         ItemStack fuelStack = itemHandler.getStackInSlot(GeneratorMenu.SLOT_FUEL);
                         if (!blockEntity.isLit() && !fuelStack.isEmpty() && itemHandler.isItemValid(GeneratorMenu.SLOT_FUEL, fuelStack) && energyHandler.getEnergyStored() < energyHandler.getMaxEnergyStored()) {
+                            Pair<Float, Integer> rate = new Pair<>((float) blockEntity.generator.getGenerationRate(), blockEntity.litTime);
                             if (blockEntity.generator.getFuelType().equals(GeneratorUtil.FuelType.ENCHANTMENT)) {
-                                var rate = GeneratorUtil.calculateEnchantmentGenerationRate(blockEntity.generator, fuelStack);
-                                blockEntity.generator.setGenerationRate(rate.getFirst());
-                                blockEntity.litTime = rate.getSecond();
+                                rate = GeneratorUtil.calculateEnchantmentGenerationRate(blockEntity.generator, fuelStack);
                             } else if (blockEntity.generator.getFuelType().equals(GeneratorUtil.FuelType.POTION)) {
-                                var rate = GeneratorUtil.calculatePotionGenerationRate(blockEntity.generator, fuelStack);
-                                blockEntity.generator.setGenerationRate(rate.getFirst());
-                                blockEntity.litTime = rate.getSecond();
+                                rate = GeneratorUtil.calculatePotionGenerationRate(blockEntity.generator, fuelStack);
                             } else if (blockEntity.generator.getFuelType().equals(GeneratorUtil.FuelType.FOOD)) {
-                                var rate = GeneratorUtil.calculateFoodGenerationRate(blockEntity.generator, fuelStack);
-                                blockEntity.generator.setGenerationRate(rate.getFirst());
-                                blockEntity.litTime = rate.getSecond();
+                                rate = GeneratorUtil.calculateFoodGenerationRate(blockEntity.generator, fuelStack);
                             } else if (blockEntity.generator.getFuelList() != null) {
                                 var fuel = blockEntity.generator.getFuelList().get(ForgeRegistries.ITEMS.getKey(fuelStack.getItem()));
-                                blockEntity.generator.setGenerationRate(fuel.rate() > 0 ? fuel.rate() : blockEntity.generator.getOriginalGenerationRate());
-                                blockEntity.litTime = fuel.burnTime();
+                                rate = new Pair<>(fuel.rate() > 0 ? fuel.rate() : (float)blockEntity.generator.getOriginalGenerationRate(), fuel.burnTime());
                             } else {
-                                blockEntity.litTime = (int) (ForgeHooks.getBurnTime(fuelStack, null) * blockEntity.generator.getConsumptionRate());
+                                rate = new Pair<>((float) blockEntity.generator.getGenerationRate(), (int) (ForgeHooks.getBurnTime(fuelStack, null) * blockEntity.generator.getConsumptionRate()));
                             }
 
-                            // Do burn
-                            if (blockEntity.litTime == 0) {
-                                blockEntity.litTime = (int) blockEntity.generator.getConsumptionRate();
-                            }
-                            blockEntity.litDuration = blockEntity.litTime;
-                            if (blockEntity.generator.getFuelType().equals(GeneratorUtil.FuelType.ENCHANTMENT) && itemHandler instanceof ItemStackHandler stackHandler) {
-                                // strip enchantments
-                                stackHandler.setStackInSlot(GeneratorMenu.SLOT_FUEL, new ItemStack(fuelStack.getItem() instanceof EnchantedBookItem ? Items.BOOK : fuelStack.getItem()));
-                            } else if (!fuelStack.getCraftingRemainingItem().isEmpty() && fuelStack.getCount() == 1 && itemHandler instanceof ItemStackHandler stackHandler) {
-                                stackHandler.setStackInSlot(GeneratorMenu.SLOT_FUEL, fuelStack.getCraftingRemainingItem());
-                            } else {
-                                fuelStack.shrink(1);
+                            // Check if energy storage has room for the entire burn or is half full
+                            boolean shouldBurn =
+                                    energyHandler.getEnergyStored() < (energyHandler.getMaxEnergyStored() / 2) ||
+                                    (rate.getFirst() * rate.getSecond()) <= (energyHandler.getMaxEnergyStored() - energyHandler.getEnergyStored());
+
+                            if (shouldBurn) {
+                                blockEntity.generator.setGenerationRate(rate.getFirst());
+                                blockEntity.litTime = rate.getSecond();
+
+                                // Do burn
+                                if (blockEntity.litTime == 0) {
+                                    blockEntity.litTime = (int) blockEntity.generator.getConsumptionRate();
+                                }
+                                blockEntity.litDuration = blockEntity.litTime;
+                                if (blockEntity.generator.getFuelType().equals(GeneratorUtil.FuelType.ENCHANTMENT) && itemHandler instanceof ItemStackHandler stackHandler) {
+                                    // strip enchantments
+                                    stackHandler.setStackInSlot(GeneratorMenu.SLOT_FUEL, new ItemStack(fuelStack.getItem() instanceof EnchantedBookItem ? Items.BOOK : fuelStack.getItem()));
+                                } else if (!fuelStack.getCraftingRemainingItem().isEmpty() && fuelStack.getCount() == 1 && itemHandler instanceof ItemStackHandler stackHandler) {
+                                    stackHandler.setStackInSlot(GeneratorMenu.SLOT_FUEL, fuelStack.getCraftingRemainingItem());
+                                } else {
+                                    fuelStack.shrink(1);
+                                }
                             }
                         }
                         // Generate power
@@ -200,6 +207,7 @@ public class GeneratorBlockEntity extends CapabilityBlockEntity
             });
 
             blockEntity.sendOutPower((int) blockEntity.generator.getTransferRate() * tickRate);
+            blockEntity.setChanged();
         }
     }
 
@@ -219,14 +227,28 @@ public class GeneratorBlockEntity extends CapabilityBlockEntity
                 AtomicInteger capacity = new AtomicInteger(energyHandler.getEnergyStored());
                 if (capacity.get() > 0) {
                     AtomicBoolean dirty = new AtomicBoolean(false);
+
+                    if (generator.hasChargeSlot()) {
+                        inventoryHandler.ifPresent(h -> {
+                            var chargeItem = h.getStackInSlot(GeneratorMenu.SLOT_CHARGE);
+                            if (!chargeItem.isEmpty()) {
+                                chargeItem.getCapability(ForgeCapabilities.ENERGY).ifPresent(chargeItemHandler -> {
+                                    int received = chargeItemHandler.receiveEnergy(Math.min(capacity.get(), amount), false);
+                                    capacity.addAndGet(-received);
+                                    energyHandler.extractEnergy(received, false);
+                                    dirty.set(true);
+                                });
+                            }
+                        });
+                    }
+
                     for (IEnergyStorage handler : recipients) {
-                        boolean doContinue = true;
-                        if (handler.canReceive()) {
+                        boolean doContinue = capacity.get() > 0;
+                        if (handler.canReceive() && doContinue) {
                             int received = handler.receiveEnergy(Math.min(capacity.get(), amount), false);
                             capacity.addAndGet(-received);
                             energyHandler.extractEnergy(received, false);
                             dirty.set(true);
-                            doContinue = capacity.get() > 0;
                         }
 
                         if (!doContinue) {

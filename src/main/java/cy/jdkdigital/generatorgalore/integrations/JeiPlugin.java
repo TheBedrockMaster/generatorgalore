@@ -43,19 +43,17 @@ public class JeiPlugin implements IModPlugin
     private static final ResourceLocation pluginId = new ResourceLocation(GeneratorGalore.MODID, GeneratorGalore.MODID);
 
     public static RecipeType<SolidFuelRecipe> SOLID_FUEL_RECIPE_TYPE = RecipeType.create(GeneratorGalore.MODID, "solid_fuels", SolidFuelRecipe.class);
-    public static Map<GeneratorObject, RecipeType<SolidFuelRecipe>> FUEL_RECIPE_TYPES = new HashMap<>();
-    public static Map<GeneratorObject, RecipeType<FluidFuelRecipe>> FLUID_FUEL_RECIPE_TYPES = new HashMap<>();
+    public static Map<ResourceLocation, RecipeType<SolidFuelRecipe>> FUEL_RECIPE_TYPES = new HashMap<>();
+    public static Map<ResourceLocation, RecipeType<FluidFuelRecipe>> FLUID_FUEL_RECIPE_TYPES = new HashMap<>();
 
     public JeiPlugin() {
         GeneratorRegistry.generators.forEach((resourceLocation, generator) -> {
             if (generator.getFuelType().equals(GeneratorUtil.FuelType.FLUID)) {
-                FLUID_FUEL_RECIPE_TYPES.put(generator, RecipeType.create(GeneratorGalore.MODID, generator.getId().getPath() + "_fuels", FluidFuelRecipe.class));
+                FLUID_FUEL_RECIPE_TYPES.put(generator.getId(), RecipeType.create(GeneratorGalore.MODID, generator.getId().getPath() + "_fuels", FluidFuelRecipe.class));
             } else if (generator.getFuelType().equals(GeneratorUtil.FuelType.SOLID) && generator.getFuelTag().equals(GeneratorUtil.EMPTY_TAG) && generator.getFuelList() == null) {
-                if (generator.getId().getPath().equals("iron")) {
-                    FUEL_RECIPE_TYPES.put(generator, SOLID_FUEL_RECIPE_TYPE);
-                }
+                FUEL_RECIPE_TYPES.put(new ResourceLocation(GeneratorGalore.MODID, "generic"), SOLID_FUEL_RECIPE_TYPE);
             } else{
-                FUEL_RECIPE_TYPES.put(generator, RecipeType.create(GeneratorGalore.MODID, generator.getId().getPath() + "_fuels", SolidFuelRecipe.class));
+                FUEL_RECIPE_TYPES.put(generator.getId(), RecipeType.create(GeneratorGalore.MODID, generator.getId().getPath() + "_fuels", SolidFuelRecipe.class));
             }
         });
     }
@@ -70,11 +68,11 @@ public class JeiPlugin implements IModPlugin
     public void registerRecipeCatalysts(IRecipeCatalystRegistration registration) {
         GeneratorRegistry.generators.forEach((resourceLocation, generator) -> {
             if (generator.getFuelType().equals(GeneratorUtil.FuelType.FLUID)) {
-                registration.addRecipeCatalyst(new ItemStack(generator.getBlockSupplier().get()), FLUID_FUEL_RECIPE_TYPES.get(generator));
+                registration.addRecipeCatalyst(new ItemStack(generator.getBlockSupplier().get()), FLUID_FUEL_RECIPE_TYPES.get(generator.getId()));
             } else if (generator.getFuelType().equals(GeneratorUtil.FuelType.SOLID) && generator.getFuelTag().equals(GeneratorUtil.EMPTY_TAG) && generator.getFuelList() == null) {
                 registration.addRecipeCatalyst(new ItemStack(generator.getBlockSupplier().get()), SOLID_FUEL_RECIPE_TYPE);
             } else {
-                registration.addRecipeCatalyst(new ItemStack(generator.getBlockSupplier().get()), FUEL_RECIPE_TYPES.get(generator));
+                registration.addRecipeCatalyst(new ItemStack(generator.getBlockSupplier().get()), FUEL_RECIPE_TYPES.get(generator.getId()));
             }
         });
     }
@@ -84,14 +82,12 @@ public class JeiPlugin implements IModPlugin
         IJeiHelpers jeiHelpers = registration.getJeiHelpers();
         IGuiHelper guiHelper = jeiHelpers.getGuiHelper();
 
-        AtomicBoolean hasRegisteredGeneric = new AtomicBoolean(false);
         GeneratorRegistry.generators.forEach((resourceLocation, generator) -> {
             if (generator.getFuelType().equals(GeneratorUtil.FuelType.FLUID)) {
                 registration.addRecipeCategories(new FluidFuelRecipeCategory(guiHelper, generator));
             } else if (generator.getFuelType().equals(GeneratorUtil.FuelType.SOLID) && generator.getFuelTag().equals(GeneratorUtil.EMPTY_TAG) && generator.getFuelList() == null) {
-                if (!hasRegisteredGeneric.get()) {
+                if (generator.getId().getPath().equals("iron")) {
                     registration.addRecipeCategories(new SolidFuelRecipeCategory(guiHelper, GeneratorRegistry.generators.get(new ResourceLocation(GeneratorGalore.MODID, "iron"))));
-                    hasRegisteredGeneric.set(true);
                 }
             } else {
                 registration.addRecipeCategories(new SolidFuelRecipeCategory(guiHelper, generator));
@@ -104,10 +100,7 @@ public class JeiPlugin implements IModPlugin
         var vanillaFuelRecipes = FuelRecipeMaker.getFuelRecipes(registration.getIngredientManager());
         var foodList = registration.getIngredientManager().getAllItemStacks().stream().filter((stack) -> {
             FoodProperties foodProperties = stack.getItem().getFoodProperties(stack, null);
-            if (foodProperties != null) {
-                return true;
-            }
-            return false;
+            return foodProperties != null;
         }).toList();
         var enchantmentList = ForgeRegistries.ENCHANTMENTS.getValues().stream().map(enchantment -> {
             List<ItemStack> books = new ArrayList<>();
@@ -142,7 +135,7 @@ public class JeiPlugin implements IModPlugin
                         fuelRecipes.add(new FluidFuelRecipe(new ResourceLocation(GeneratorGalore.MODID, idPrefix + "_fuels_" + (i.getAndIncrement())), fluidStacks, genIngredient, (float) generator.getGenerationRate(), (float) generator.getConsumptionRate()));
                     }
                 }
-                registration.addRecipes(FLUID_FUEL_RECIPE_TYPES.get(generator), fuelRecipes);
+                registration.addRecipes(FLUID_FUEL_RECIPE_TYPES.get(generator.getId()), fuelRecipes);
             } else if (generator.getFuelType().equals(GeneratorUtil.FuelType.SOLID) && generator.getFuelTag().equals(GeneratorUtil.EMPTY_TAG) && generator.getFuelList() == null) {
                 // Standard generator
                 var fuelRecipes = new ArrayList<SolidFuelRecipe>();
@@ -179,7 +172,7 @@ public class JeiPlugin implements IModPlugin
                     });
                 }
 
-                registration.addRecipes(FUEL_RECIPE_TYPES.get(generator), fuelRecipes);
+                registration.addRecipes(FUEL_RECIPE_TYPES.get(generator.getId()), fuelRecipes);
             }
         });
     }

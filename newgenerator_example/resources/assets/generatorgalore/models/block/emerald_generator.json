@@ -1,7 +1,9 @@
 {
-  "parent": "generatorgalore:block/generator",
+  "parent": "generatorgalore:block/generator_new",
   "textures": {
+    "side": "minecraft:block/emerald_block",
+    "face": "minecraft:block/emerald_block",
     "top": "minecraft:block/emerald_block",
-    "side": "minecraft:block/emerald_block"
+    "bottom": "minecraft:block/emerald_block"
   }
 }

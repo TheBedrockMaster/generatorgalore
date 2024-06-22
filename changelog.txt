@@ -1,3 +1,34 @@
+1.20.1-1.2.4
+
+- Generators will now only burn fuel if the internal energy buffer has room for the entire burn
+
+
+1.20.1-1.2.3
+
+- No more duping stuff
+
+
+1.20.1-1.2.2
+
+- Fixed JEi integration
+
+
+1.20.1-1.2.1
+
+- Added honey generator
+
+
+1.20.1-1.2.0
+
+- Added charging slot in higher tier generators for charging items
+
+
+1.20.1-1.1.0
+
+- Fixed creative tab ordering
+- New generator designs made by the talented artists from TerrariumEarth and sponsored by the ATM team
+
+
 1.20.0-1.0.5
 
 - Port to 1.20

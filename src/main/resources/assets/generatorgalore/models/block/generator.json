@@ -5,6 +5,7 @@
     "face": "#side",
     "back": "#side",
     "top": "#side",
+    "bottom": "#side",
     "front": "generatorgalore:block/generator_off",
     "frame": "generatorgalore:block/generator_frame"
   },
@@ -14,7 +15,7 @@
       "from": [ 0, 0, 0 ],
       "to": [ 16, 16, 16 ],
       "faces": {
-        "down":  { "texture": "#top", "cullface": "down" },
+        "down":  { "texture": "#bottom", "cullface": "down" },
         "up":    { "texture": "#top", "cullface": "up" },
         "north": { "texture": "#face", "cullface": "north" },
         "south": { "texture": "#back", "cullface": "south" },

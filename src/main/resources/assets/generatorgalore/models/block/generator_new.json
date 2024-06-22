@@ -1,0 +1,33 @@
+{
+  "parent": "minecraft:block/orientable",
+  "textures": {
+    "particle": "#side",
+    "face": "#side",
+    "back": "#side",
+    "top": "#side",
+    "bottom": "#side",
+    "front": "generatorgalore:block/empty"
+  },
+  "render_type": "translucent",
+  "elements": [
+    {
+      "from": [ 0, 0, 0 ],
+      "to": [ 16, 16, 16 ],
+      "faces": {
+        "down":  { "texture": "#bottom", "cullface": "down" },
+        "up":    { "texture": "#top", "cullface": "up" },
+        "north": { "texture": "#face", "cullface": "north" },
+        "south": { "texture": "#back", "cullface": "south" },
+        "west":  { "texture": "#side", "cullface": "west" },
+        "east":  { "texture": "#side", "cullface": "east" }
+      }
+    },
+    {
+      "from": [ 0, 0, 0 ],
+      "to": [ 16, 16, 16 ],
+      "faces": {
+        "north": { "uv": [ 0, 0, 16, 16 ], "texture": "#front", "cullface": "north", "emissivity": 15 }
+      }
+    }
+  ]
+}

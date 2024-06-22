@@ -23,6 +23,7 @@ public class GeneratorMenu extends AbstractContainer
     public final GeneratorBlockEntity blockEntity;
 
     public static final int SLOT_FUEL = 0;
+    public static final int SLOT_CHARGE = 1;
 
     public GeneratorMenu(final int windowId, final Inventory playerInventory, final FriendlyByteBuf data) {
         this(windowId, playerInventory, getTileEntity(playerInventory, data));
@@ -114,6 +115,9 @@ public class GeneratorMenu extends AbstractContainer
         this.blockEntity.getCapability(ForgeCapabilities.ITEM_HANDLER).ifPresent(inv -> {
             if (inv instanceof ManualItemHandler itemHandler) {
                 addSlot(new ManualSlotItemHandler(itemHandler, SLOT_FUEL, 80, 54));
+                if (blockEntity.generator.hasChargeSlot()) {
+                    addSlot(new ManualSlotItemHandler(itemHandler, SLOT_CHARGE, 152, 54));
+                }
             }
         });
 

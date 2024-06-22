@@ -28,7 +28,9 @@ public class UpgradeItem extends Item
             ResourceLocation blockId = ForgeRegistries.BLOCKS.getKey(state.getBlock());
             if (blockId != null && blockId.getNamespace().equals(GeneratorGalore.MODID) && blockId.getPath().equals(previousTier + "_generator")) {
                 GeneratorUtil.replaceGenerator(context.getLevel(), context.getClickedPos(), generator);
-                context.getItemInHand().shrink(1);
+                if (!context.getPlayer().isCreative()) {
+                    context.getItemInHand().shrink(1);
+                }
                 return InteractionResult.CONSUME;
             }
         }

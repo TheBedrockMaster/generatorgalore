@@ -8,6 +8,7 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.inventory.MenuType;
 import net.minecraft.world.item.CreativeModeTab;
+import net.minecraft.world.item.CreativeModeTabs;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.RecipeSerializer;
@@ -42,6 +43,7 @@ public class GeneratorGalore
 
     public static RegistryObject<CreativeModeTab> TAB = CREATIVE_MODE_TABS.register(MODID, () -> {
         return CreativeModeTab.builder()
+                .withTabsBefore(CreativeModeTabs.SPAWN_EGGS)
                 .icon(() -> new ItemStack(ForgeRegistries.ITEMS.getValue(new ResourceLocation(MODID, "iron_generator"))))
                 .title(Component.literal("Generator Galore"))
                 .build();

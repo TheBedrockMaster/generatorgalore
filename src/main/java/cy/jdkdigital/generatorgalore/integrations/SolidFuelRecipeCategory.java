@@ -3,6 +3,7 @@ package cy.jdkdigital.generatorgalore.integrations;
 import cy.jdkdigital.generatorgalore.GeneratorGalore;
 import cy.jdkdigital.generatorgalore.common.recipe.SolidFuelRecipe;
 import cy.jdkdigital.generatorgalore.util.GeneratorObject;
+import cy.jdkdigital.generatorgalore.util.GeneratorUtil;
 import mezz.jei.api.constants.VanillaTypes;
 import mezz.jei.api.gui.builder.IRecipeLayoutBuilder;
 import mezz.jei.api.gui.drawable.IDrawable;
@@ -37,7 +38,10 @@ public class SolidFuelRecipeCategory implements IRecipeCategory<SolidFuelRecipe>
 
     @Override
     public @NotNull RecipeType<SolidFuelRecipe> getRecipeType() {
-        return JeiPlugin.FUEL_RECIPE_TYPES.get(generator);
+        if (!JeiPlugin.FUEL_RECIPE_TYPES.containsKey(generator.getId()) || generator.getFuelType().equals(GeneratorUtil.FuelType.SOLID) && generator.getFuelTag().equals(GeneratorUtil.EMPTY_TAG) && generator.getFuelList() == null) {
+            return JeiPlugin.FUEL_RECIPE_TYPES.get(new ResourceLocation(GeneratorGalore.MODID, "generic"));
+        }
+        return JeiPlugin.FUEL_RECIPE_TYPES.get(generator.getId());
     }
 
     @Override
